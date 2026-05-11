@@ -28,7 +28,7 @@ export const createNewChat = TryCatch(
       users: [userId, otherUserId],
     });
     res.status(201).json({ message: "New chat created", chatId: newChat._id });
-  }
+  },
 );
 
 export const getAllChats = TryCatch(async (req: AuthenticatedRequest, res) => {
@@ -50,7 +50,7 @@ export const getAllChats = TryCatch(async (req: AuthenticatedRequest, res) => {
 
       try {
         const { data } = await axios.get(
-          `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
+          `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`,
         );
         return {
           user: data,
@@ -71,7 +71,7 @@ export const getAllChats = TryCatch(async (req: AuthenticatedRequest, res) => {
           },
         };
       }
-    })
+    }),
   );
   res.json({ chats: chatWithUserData });
 });
@@ -100,14 +100,14 @@ export const sendMessage = TryCatch(async (req: AuthenticatedRequest, res) => {
     return;
   }
   const isUserInChat = chat.users.some(
-    (userId) => userId.toString() === senderId.toString()
+    (userId) => userId.toString() === senderId.toString(),
   );
   if (!isUserInChat) {
     res.status(403).json({ message: "You are not a participant of this chat" });
     return;
   }
   const otherUserId = chat.users.find(
-    (userId) => userId.toString() !== senderId.toString()
+    (userId) => userId.toString() !== senderId.toString(),
   );
   if (!otherUserId) {
     res.status(401).json({ message: "No other user" });
@@ -135,12 +135,12 @@ export const sendMessage = TryCatch(async (req: AuthenticatedRequest, res) => {
     console.log(
       "this is image file's data: ",
       imageFile.path,
-      imageFile.filename
+      imageFile.filename,
     );
 
     messageData.images = {
-      url: imageFile.url,
-      publicId: imageFile.public_id,
+      url: (imageFile as any).path,
+      publicId: (imageFile as any).filename,
     };
     messageData.messageType = "image";
     messageData.text = text || "";
@@ -160,20 +160,19 @@ export const sendMessage = TryCatch(async (req: AuthenticatedRequest, res) => {
       },
       updatedAt: new Date(),
     },
-    { new: true }
+    { new: true },
   );
   //emit to socket
+  // 1. Emit to everyone in the chat room (covers users actively viewing this chat)
   io.to(chatId).emit("newMessage", savedMessage);
 
-  if (receiverSocketId) {
+  // 2. If receiver is NOT in the chat room, send directly so their sidebar/notification updates
+  if (receiverSocketId && !isReceiverInChatRoom) {
     io.to(receiverSocketId).emit("newMessage", savedMessage);
   }
 
+  // 3. If receiver saw the message immediately, notify sender about "seen" status
   const senderSocketId = getReceiverSocketId(senderId.toString());
-  if (senderSocketId) {
-    io.to(senderSocketId).emit("newMessage", savedMessage);
-  }
-
   if (isReceiverInChatRoom && senderSocketId) {
     io.to(senderSocketId).emit("messagesSeen", {
       chatId,
@@ -212,7 +211,7 @@ export const getMessageByChat = TryCatch(
       return;
     }
     const isUserInChat = chat.users.some(
-      (id) => id.toString() === userId.toString()
+      (id) => id.toString() === userId.toString(),
     );
     if (!isUserInChat) {
       res
@@ -234,11 +233,11 @@ export const getMessageByChat = TryCatch(
       {
         seen: true,
         seenAt: new Date(),
-      }
+      },
     );
     const message = await Messages.find({ chatId }).sort({ createdAt: 1 });
     const otherUserId = chat.users.find(
-      (id) => id.toString() !== userId.toString()
+      (id) => id.toString() !== userId.toString(),
     );
     if (!otherUserId) {
       res.status(400).json({
@@ -250,7 +249,7 @@ export const getMessageByChat = TryCatch(
 
     try {
       const { data } = await axios.get(
-        `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
+        `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`,
       );
 
       //socket work
@@ -279,5 +278,5 @@ export const getMessageByChat = TryCatch(
         },
       });
     }
-  }
+  },
 );

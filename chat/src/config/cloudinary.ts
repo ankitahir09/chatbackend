@@ -8,4 +8,4 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_API_SECRET as string,
 });
 
-export default cloudinary;
+export default cloudinary.v2;
