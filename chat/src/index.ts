@@ -10,9 +10,15 @@ connectDB();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5000"],
+    origin: [
+      "http://13.127.127.61:3000",
+      "http://13.127.127.61:5000",
+      "http://localhost:3000",
+      "http://localhost:5000",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-  })
+  }),
 );
 app.use("/api/v1", chatRoutes);
 const port = process.env.PORT;
