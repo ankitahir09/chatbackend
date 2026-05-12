@@ -80,7 +80,6 @@ export const sendMessage = TryCatch(async (req: AuthenticatedRequest, res) => {
   const senderId = req.user?._id;
   const { chatId, text } = req.body;
   const imageFile = req.file;
-  console.log("request from frontend: ", req.body, "file: ", imageFile);
 
   if (!senderId) {
     res.status(401).json({ message: "Unauthorized" });
@@ -132,12 +131,6 @@ export const sendMessage = TryCatch(async (req: AuthenticatedRequest, res) => {
     seenAt: isReceiverInChatRoom ? new Date() : undefined, // set seenAt if receiver is in the chat room
   };
   if (imageFile) {
-    console.log(
-      "this is image file's data: ",
-      imageFile.path,
-      imageFile.filename,
-    );
-
     messageData.images = {
       url: (imageFile as any).path,
       publicId: (imageFile as any).filename,
@@ -188,8 +181,6 @@ export const getMessageByChat = TryCatch(
   async (req: AuthenticatedRequest, res) => {
     const userId = req.user?._id;
     const { chatId } = req.params;
-    console.log("chatId: ", chatId, "all param: ", req.params);
-
     if (!userId) {
       res.status(401).json({
         message: "Unauthorized",

@@ -21,13 +21,16 @@ export const startSentOtpConsumer = async () => {
           console.log("there is no msg in queue");
           return;
         }
-        const {to, subject, body} = JSON.parse(msg.content.toString());
+        const { to, subject, body } = JSON.parse(msg.content.toString());
         const transporter = nodemailer.createTransport({
           host: "smtp.gmail.com",
           port: 465,
           auth: {
             user: process.env.USER,
             pass: process.env.PASSWORD,
+          },
+          tls: {
+            rejectUnauthorized: false,
           },
         });
         await transporter.sendMail({

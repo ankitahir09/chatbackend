@@ -6,8 +6,6 @@ import type { AuthenticatedRequest } from "../middleware/isAuth.js";
 import { User } from "../models/User.js";
 
 export const loginUser = TryCatch(async (req, res) => {
-  console.log("in user controller");
-
   const { email } = req.body;
   const rateLimitKey = `otp:ratelimit:${email}`;
   const rateLimit = await redisClient.get(rateLimitKey);
@@ -64,8 +62,6 @@ export const updateName = TryCatch(async (req: AuthenticatedRequest, res) => {
     res.status(404).json({ message: "User not found" });
     return;
   }
-  console.log(req.user.name);
-  
   const user = await User.findById(req.user._id);
 
   if (!user) {
