@@ -16,15 +16,15 @@ export const startSentOtpConsumer = async () => {
     await channel.assertQueue(queueName, { durable: true });
     console.log("✅ Mail service consumer started, listening for otp emails");
     channel.consume(queueName, async (msg) => {
+      if (!msg) {
+        console.log("there is no msg in queue");
+        return;
+      }
       try {
-        if (!msg) {
-          console.log("there is no msg in queue");
-          return;
-        }
         const { to, subject, body } = JSON.parse(msg.content.toString());
         const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 465,
+          host: "smtp-relay.brevo.com",
+          port: 587,
           auth: {
             user: process.env.USER,
             pass: process.env.PASSWORD,
@@ -34,7 +34,7 @@ export const startSentOtpConsumer = async () => {
           },
         });
         await transporter.sendMail({
-          from: "ChattApp <no-reply@chattapp.com>",
+          from: "ChattApp <ahirankit2632@gmail.com>",
           to,
           subject,
           text: body,
@@ -43,6 +43,7 @@ export const startSentOtpConsumer = async () => {
         channel.ack(msg);
       } catch (error) {
         console.log("failed to send OTP ", error);
+        channel.ack(msg);
       }
     });
   } catch (error) {
