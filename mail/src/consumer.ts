@@ -2,6 +2,17 @@ import amqp from "amqplib";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 export const startSentOtpConsumer = async () => {
   try {
     const connection = await amqp.connect({
@@ -22,17 +33,6 @@ export const startSentOtpConsumer = async () => {
       }
       try {
         const { to, subject, body } = JSON.parse(msg.content.toString());
-        const transporter = nodemailer.createTransport({
-          host: "smtp-relay.brevo.com",
-          port: 587,
-          auth: {
-            user: process.env.USER,
-            pass: process.env.PASSWORD,
-          },
-          tls: {
-            rejectUnauthorized: false,
-          },
-        });
         await transporter.sendMail({
           from: "ChattApp <ahirankit2632@gmail.com>",
           to,
